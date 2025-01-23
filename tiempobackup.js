@@ -40,7 +40,8 @@ const obtenInformacionMeteo = async (latitud, longitud) => {
   respuestaAPIenJSON = await respuestaAPI.json();
   console.log(respuestaAPI.ok);
 };
-/* Se intentó hacer: try {
+/* Se intentó hacer:
+ try {
   let respuestaAPI = await fetch(URL);
   if (!respuestaAPI.ok) {
     throw new Error(`Error en la solicitud`);
@@ -70,8 +71,6 @@ const procesaDireccionViento = () => {
       break;
     case direccionViento >= 215 && direccionViento < 315:
       console.log("SO/O/NO🌬️");
-    default:
-      console.log("dato invalido🌬️");
       break;
   }
 };
@@ -83,7 +82,7 @@ const procesaDireccionViento = () => {
 };  */
 const procesaTemperatura = () => {
   let codigoTemperatura = respuestaAPIenJSON.current.temperature_2m;
-  console.log(codigoTemperatura);
+  console.log(codigoTemperatura + " ºC");
   if (codigoTemperatura < 10) {
     console.log("Frío🥶");
   } else {
@@ -106,9 +105,11 @@ const procesaTemperatura = () => {
 }; */
 const procesaVelocidadViento = () => {
   let velocidadViento = respuestaAPIenJSON.current.wind_speed_10m;
-  console.log(velocidadViento);
+  console.log(velocidadViento + " Km/h");
   if (velocidadViento < 10) {
     console.log("🐢");
+  } else {
+    console.log("🚀");
   }
 };
 

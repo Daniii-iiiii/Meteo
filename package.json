@@ -1,6 +1,16 @@
 {
-  "type": "module",
-  "dependencies": {
-    "node-fetch": "^3.3.2"
-  }
+ "name": "tiempo",
+ "version": "1.0.0",
+ "description": "",
+ "main": "index.js",
+ "scripts": {
+  "start": "node index.js",
+  "test": "jest"
+ },
+ "dependencies": {
+ "node-fetch": "^2.7.0"
+ },
+ "devDependencies": {
+  "jest": "^29.7.0"
+ }
 }
