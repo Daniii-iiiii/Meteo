@@ -122,11 +122,13 @@ const main = async () => {
 };
 
 main();
-module.exports = {
+export {
   obtenInformacionMeteo,
   procesaCodigoTiempo,
   procesaDireccionViento,
   procesaTemperatura,
   procesaVelocidadViento,
-  infoTiempo,
 };
+
+
+
