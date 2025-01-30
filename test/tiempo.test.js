@@ -4,7 +4,7 @@ import {
   procesaDireccionViento, 
   procesaTemperatura, 
   procesaVelocidadViento 
-} from "../src/tiempo.js";  // Asegúrate de que la ruta sea correcta
+} from "../src/tiempo.js"; // Ruta del código
 
 let respuestaAPIenJSON;
 
@@ -27,7 +27,7 @@ let respuestaAPIenJSON;
   test("procesaDireccionViento debe clasificar correctamente la dirección", () => {
     respuestaAPIenJSON = { current: { wind_direction_10m: 50 } };
     const consoleSpy = jest.spyOn(console, "log");
-    procesaDireccionViento();
+    procesaDireccionViento();cd
     expect(consoleSpy).toHaveBeenCalledWith("NE/E/SE🌬️");
     consoleSpy.mockRestore();
   });
