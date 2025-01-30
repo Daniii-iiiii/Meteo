@@ -1,24 +1,51 @@
-const {obtenInformacionMeteo, procesaCodigoTiempo, procesaDireccionViento, procesaTemperatura, procesaVelocidadViento, infoTiempo }; = require("../src/tiempo.js");
-obtenInformacionMeteo();
-procesaCodigoTiempo();
-procesaDireccionViento();
-procesaTemperatura();
-procesaVelocidadViento();
+import {
+  obtenInformacionMeteo, 
+  procesaCodigoTiempo, 
+  procesaDireccionViento, 
+  procesaTemperatura, 
+  procesaVelocidadViento 
+} from "../src/tiempo.js";  // Asegúrate de que la ruta sea correcta
 
-describe("Información Tiempo", () => {
-  test("Sabemos que en Teis no nieva", () => {
-    expect(infoTiempo() =>).toThrow("No estamos en Rusia");
+let respuestaAPIenJSON;
+
+
+  test("obtenInformacionMeteo debe obtener datos de la API correctamente", async () => {
+    // Simulamos la llamada a la API
+    await obtenInformacionMeteo(42.2576, -8.683); // Coordenadas de Teis
+    // Asegúrate de que la API haya actualizado la variable correctamente
+    expect(respuestaAPIenJSON).toHaveProperty("current");
   });
-  test("La velocidad del viento nunca será mayor a: ¿200km?", () => {
-    expect(procesaVelocidadViento()).toThrow(1);
+
+  test("procesaCodigoTiempo debe devolver el emoji correcto", () => {
+    respuestaAPIenJSON = { current: { weather_code: 0 } }; // Simulando respuesta de API
+    const consoleSpy = jest.spyOn(console, "log");
+    procesaCodigoTiempo();
+    expect(consoleSpy).toHaveBeenCalledWith("☀️");
+    consoleSpy.mockRestore();
   });
-  test("La temperatura nunca superará: ¿40ºC?", () => {
-    expect(procesaTemperatura()).toBe();
+
+  test("procesaDireccionViento debe clasificar correctamente la dirección", () => {
+    respuestaAPIenJSON = { current: { wind_direction_10m: 50 } };
+    const consoleSpy = jest.spyOn(console, "log");
+    procesaDireccionViento();
+    expect(consoleSpy).toHaveBeenCalledWith("NE/E/SE🌬️");
+    consoleSpy.mockRestore();
   });
-  test("Siempre hay viento", () => {
-    expect(procesaDireccionViento() =>).toBe("");
+
+  test("procesaTemperatura debe clasificar correctamente la temperatura", () => {
+    respuestaAPIenJSON = { current: { temperature_2m: 8 } };
+    const consoleSpy = jest.spyOn(console, "log");
+    procesaTemperatura();
+    expect(consoleSpy).toHaveBeenCalledWith("8 ºC");
+    expect(consoleSpy).toHaveBeenCalledWith("Frío🥶");
+    consoleSpy.mockRestore();
   });
-  test("Codigo Tiempo", () => {
-    expect(procesaCodigoTiempo()).toBe();
+
+  test("procesaVelocidadViento debe clasificar correctamente la velocidad", () => {
+    respuestaAPIenJSON = { current: { wind_speed_10m: 15 } };
+    const consoleSpy = jest.spyOn(console, "log");
+    procesaVelocidadViento();
+    expect(consoleSpy).toHaveBeenCalledWith("15 Km/h");
+    expect(consoleSpy).toHaveBeenCalledWith("🚀");
+    consoleSpy.mockRestore();
   });
-});
