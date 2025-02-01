@@ -1,8 +1,9 @@
-import fetch from "node-fetch";
+const fetch = require('node-fetch');
 
 const teisLatitud = 42.2576;
 const teisLongitud = -8.683;
 let respuestaAPIenJSON = "";
+
 const infoTiempo = {
   0: "☀️",
   1: "☁️",
@@ -35,82 +36,54 @@ const infoTiempo = {
 };
 
 const obtenInformacionMeteo = async (latitud, longitud) => {
-  const apiURL = `https://api.open-meteo.com/v1/forecast?latitude=${latitud}&longitude=${longitud}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m`;
-  let respuestaAPI = await fetch(apiURL);
-  respuestaAPIenJSON = await respuestaAPI.json();
-  console.log(respuestaAPI.ok);
+  const apiURL = `https://api.open-meteo.com/v1/forecast?latitude=${latitud}&longitude=${longitud}&current_weather=true`;
+
+  try {
+    let respuestaAPI = await fetch(apiURL);
+    respuestaAPIenJSON = await respuestaAPI.json();
+  } catch (error) {
+    console.error(`Error al obtener datos de la API: ${error.message}`);
+  }
 };
-/* Se intentó hacer:
- try {
-  let respuestaAPI = await fetch(URL);
-  if (!respuestaAPI.ok) {
-    throw new Error(`Error en la solicitud`);
-  }catch (error)
-  {
-  throw new Error(`Error al obtener datos de la API:
-  ${error.message}`);
-} */
+
 const procesaCodigoTiempo = () => {
-  let codigoTiempo = respuestaAPIenJSON.current.weather_code;
-  const emojiTiempo = infoTiempo[codigoTiempo];
-  console.log(emojiTiempo);
+  if (!respuestaAPIenJSON || !respuestaAPIenJSON.current_weather) return;
+  let codigoTiempo = respuestaAPIenJSON.current_weather.weathercode;
+  console.log(infoTiempo[codigoTiempo] || "❓");
 };
 
 const procesaDireccionViento = () => {
-  let direccionViento = respuestaAPIenJSON.current.wind_direction_10m;
-  console.log(direccionViento);
+  if (!respuestaAPIenJSON || !respuestaAPIenJSON.current_weather) return;
+  let direccionViento = respuestaAPIenJSON.current_weather.winddirection;
+  
   switch (true) {
-    case direccionViento >= 315 && direccionViento < 45:
-      console.log("NO/NE🌬️");
+    case direccionViento >= 315 || direccionViento < 45:
+      console.log(`${direccionViento}° NO/NE🌬️`);
       break;
     case direccionViento >= 45 && direccionViento < 135:
-      console.log("NE/E/SE🌬️");
+      console.log(`${direccionViento}° NE/E/SE🌬️`);
       break;
     case direccionViento >= 135 && direccionViento < 215:
-      console.log("SE/S/SO🌬️");
+      console.log(`${direccionViento}° SE/S/SO🌬️`);
       break;
     case direccionViento >= 215 && direccionViento < 315:
-      console.log("SO/O/NO🌬️");
+      console.log(`${direccionViento}° SO/O/NO🌬️`);
       break;
   }
 };
 
-/* console.log(direccionViento);
-  if (direccionViento > 0) {
-    console.log("🧭");
-  }
-};  */
 const procesaTemperatura = () => {
-  let codigoTemperatura = respuestaAPIenJSON.current.temperature_2m;
-  console.log(codigoTemperatura + " ºC");
-  if (codigoTemperatura < 10) {
-    console.log("Frío🥶");
-  } else {
-    console.log("Se está bien👌");
-  }
+  if (!respuestaAPIenJSON || !respuestaAPIenJSON.current_weather) return;
+  let temperatura = respuestaAPIenJSON.current_weather.temperature;
+  console.log(`${temperatura} °C`);
+  console.log(temperatura < 10 ? "Frío🥶" : "Se está bien👌");
 };
-/* Las promesas van con Resolve y Reject, en este caso utilizamos:
- if (codigoTemperatura < 10) {
-(resolve)console.log("Frío🥶");
-  } else {
-(reject)console.log("Se está bien👌");
-  } */
-/* if (codigoTemperatura < 10) {
-    console.log("🥶");
-  }
-}; */
-/* if (codigoTemperatura < 10) {
-    console.log("🥶");
-  }
-}; */
+
 const procesaVelocidadViento = () => {
-  let velocidadViento = respuestaAPIenJSON.current.wind_speed_10m;
-  console.log(velocidadViento + " Km/h");
-  if (velocidadViento < 10) {
-    console.log("🐢");
-  } else {
-    console.log("🚀");
-  }
+  if (!respuestaAPIenJSON || !respuestaAPIenJSON.current_weather) return;
+  let velocidadViento = respuestaAPIenJSON.current_weather.windspeed;
+  console.log(`${velocidadViento} Km/h`);
+  console.log(velocidadViento < 10 ? "🐢" : "🚀");
 };
 
 const main = async () => {
@@ -122,13 +95,11 @@ const main = async () => {
 };
 
 main();
-export {
+
+module.exports = {
   obtenInformacionMeteo,
   procesaCodigoTiempo,
   procesaDireccionViento,
   procesaTemperatura,
   procesaVelocidadViento,
 };
-
-
-

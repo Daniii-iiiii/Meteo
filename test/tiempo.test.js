@@ -1,51 +1,95 @@
-import {
-  obtenInformacionMeteo, 
-  procesaCodigoTiempo, 
-  procesaDireccionViento, 
-  procesaTemperatura, 
-  procesaVelocidadViento 
-} from "../src/tiempo.js"; // Ruta del código
+const fetch = require('node-fetch');
 
-let respuestaAPIenJSON;
+const { 
+    obtenInformacionMeteo, 
+    procesaCodigoTiempo, 
+    procesaDireccionViento, 
+    procesaTemperatura, 
+    procesaVelocidadViento 
+} = require('../src/tiempo.js');
 
+jest.mock('node-fetch');
 
-  test("obtenInformacionMeteo debe obtener datos de la API correctamente", async () => {
-    // Simulamos la llamada a la API
-    await obtenInformacionMeteo(42.2576, -8.683); // Coordenadas de Teis
-    // Asegúrate de que la API haya actualizado la variable correctamente
-    expect(respuestaAPIenJSON).toHaveProperty("current");
-  });
+describe('currentweather', () => {
+    let mockResponse;
 
-  test("procesaCodigoTiempo debe devolver el emoji correcto", () => {
-    respuestaAPIenJSON = { current: { weather_code: 0 } }; // Simulando respuesta de API
-    const consoleSpy = jest.spyOn(console, "log");
-    procesaCodigoTiempo();
-    expect(consoleSpy).toHaveBeenCalledWith("☀️");
-    consoleSpy.mockRestore();
-  });
+    beforeEach(() => {
+        mockResponse = {
+            current_weather: {
+                weathercode: 1,
+                winddirection: 90,
+                temperature: 15,
+                windspeed: 5
+            }
+        };
 
-  test("procesaDireccionViento debe clasificar correctamente la dirección", () => {
-    respuestaAPIenJSON = { current: { wind_direction_10m: 50 } };
-    const consoleSpy = jest.spyOn(console, "log");
-    procesaDireccionViento();cd
-    expect(consoleSpy).toHaveBeenCalledWith("NE/E/SE🌬️");
-    consoleSpy.mockRestore();
-  });
+        fetch.mockResolvedValue({
+            ok: true,
+            json: async () => mockResponse
+        });
+    });
 
-  test("procesaTemperatura debe clasificar correctamente la temperatura", () => {
-    respuestaAPIenJSON = { current: { temperature_2m: 8 } };
-    const consoleSpy = jest.spyOn(console, "log");
-    procesaTemperatura();
-    expect(consoleSpy).toHaveBeenCalledWith("8 ºC");
-    expect(consoleSpy).toHaveBeenCalledWith("Frío🥶");
-    consoleSpy.mockRestore();
-  });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
-  test("procesaVelocidadViento debe clasificar correctamente la velocidad", () => {
-    respuestaAPIenJSON = { current: { wind_speed_10m: 15 } };
-    const consoleSpy = jest.spyOn(console, "log");
-    procesaVelocidadViento();
-    expect(consoleSpy).toHaveBeenCalledWith("15 Km/h");
-    expect(consoleSpy).toHaveBeenCalledWith("🚀");
-    consoleSpy.mockRestore();
-  });
+    test('obtenInformacionMeteo fetches data from API', async () => {
+        await obtenInformacionMeteo(42.2576, -8.683);
+        expect(fetch).toHaveBeenCalledWith('https://api.open-meteo.com/v1/forecast?latitude=42.2576&longitude=-8.683&current_weather=true');
+    });
+
+    test('procesaCodigoTiempo logs correct weather icon', async () => {
+        console.log = jest.fn();
+        await obtenInformacionMeteo(42.2576, -8.683);
+        procesaCodigoTiempo();
+        expect(console.log).toHaveBeenCalledWith('☁️');
+    });
+
+    test('procesaDireccionViento logs correct wind direction for NE/E/SE', async () => {
+        mockResponse.current_weather.winddirection = 90;
+        await obtenInformacionMeteo(42.2576, -8.683);
+        console.log = jest.fn();
+        procesaDireccionViento();
+        expect(console.log).toHaveBeenCalledWith('90° NE/E/SE🌬️');
+    });
+
+    test('procesaDireccionViento logs correct wind direction for NO/NE', async () => {
+        mockResponse.current_weather.winddirection = 30;
+        await obtenInformacionMeteo(42.2576, -8.683);
+        console.log = jest.fn();
+        procesaDireccionViento();
+        expect(console.log).toHaveBeenCalledWith('30° NO/NE🌬️');
+    });
+
+    test('procesaDireccionViento logs correct wind direction for SE/S/SO', async () => {
+        mockResponse.current_weather.winddirection = 180;
+        await obtenInformacionMeteo(42.2576, -8.683);
+        console.log = jest.fn();
+        procesaDireccionViento();
+        expect(console.log).toHaveBeenCalledWith('180° SE/S/SO🌬️');
+    });
+
+    test('procesaDireccionViento logs correct wind direction for SO/O/NO', async () => {
+        mockResponse.current_weather.winddirection = 270;
+        await obtenInformacionMeteo(42.2576, -8.683);
+        console.log = jest.fn();
+        procesaDireccionViento();
+        expect(console.log).toHaveBeenCalledWith('270° SO/O/NO🌬️');
+    });
+
+    test('procesaTemperatura logs correct temperature and message', async () => {
+        console.log = jest.fn();
+        await obtenInformacionMeteo(42.2576, -8.683);
+        procesaTemperatura();
+        expect(console.log).toHaveBeenCalledWith('15 °C');
+        expect(console.log).toHaveBeenCalledWith('Se está bien👌');
+    });
+
+    test('procesaVelocidadViento logs correct wind speed and message', async () => {
+        console.log = jest.fn();
+        await obtenInformacionMeteo(42.2576, -8.683);
+        procesaVelocidadViento();
+        expect(console.log).toHaveBeenCalledWith('5 Km/h');
+        expect(console.log).toHaveBeenCalledWith('🐢');
+    });
+});
