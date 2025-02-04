@@ -33,63 +33,58 @@ describe('currentweather', () => {
         jest.clearAllMocks();
     });
 
-    test('obtenInformacionMeteo fetches data from API', async () => {
+    test('obtenInformacionMeteo API', async () => {
         await obtenInformacionMeteo(42.2576, -8.683);
-        expect(fetch).toHaveBeenCalledWith('https://api.open-meteo.com/v1/forecast?latitude=42.2576&longitude=-8.683&current_weather=true');
+        expect(fetch).toHaveBeenCalledWith(
+            'https://api.open-meteo.com/v1/forecast?latitude=42.2576&longitude=-8.683&current_weather=true'
+        );
     });
 
-    test('procesaCodigoTiempo logs correct weather icon', async () => {
-        console.log = jest.fn();
+    test.each([
+        { weathercode: 1, expected: '☁️' },
+        { weathercode: 999, expected: '❓' }
+    ])('procesaCodigoTiempo tiene que enseñar el mensaje correcto de $weathercode', async ({ weathercode, expected }) => {
+        mockResponse.current_weather.weathercode = weathercode;
         await obtenInformacionMeteo(42.2576, -8.683);
+        console.log = jest.fn();
         procesaCodigoTiempo();
-        expect(console.log).toHaveBeenCalledWith('☁️');
+        expect(console.log).toHaveBeenCalledWith(expected);
     });
 
-    test('procesaDireccionViento logs correct wind direction for NE/E/SE', async () => {
-        mockResponse.current_weather.winddirection = 90;
+    test.each([
+        { winddirection: 30, expected: '30° NO/NE🌬️' },
+        { winddirection: 90, expected: '90° NE/E/SE🌬️' },
+        { winddirection: 180, expected: '180° SE/S/SO🌬️' },
+        { winddirection: 270, expected: '270° SO/O/NO🌬️' }
+    ])('procesaDireccionViento tiene que enseñar el mensaje correcto de $winddirection en °', async ({ winddirection, expected }) => {
+        mockResponse.current_weather.winddirection = winddirection;
         await obtenInformacionMeteo(42.2576, -8.683);
         console.log = jest.fn();
         procesaDireccionViento();
-        expect(console.log).toHaveBeenCalledWith('90° NE/E/SE🌬️');
+        expect(console.log).toHaveBeenCalledWith(expected);
     });
 
-    test('procesaDireccionViento logs correct wind direction for NO/NE', async () => {
-        mockResponse.current_weather.winddirection = 30;
+    test.each([
+        { temperature: 15, expected: 'Se está bien👌' },
+        { temperature: 5, expected: 'Frío🥶' }
+    ])('procesaTemperatura tiene que enseñar el mensaje correcto de $temperature en °C', async ({ temperature, expected }) => {
+        mockResponse.current_weather.temperature = temperature;
         await obtenInformacionMeteo(42.2576, -8.683);
         console.log = jest.fn();
-        procesaDireccionViento();
-        expect(console.log).toHaveBeenCalledWith('30° NO/NE🌬️');
-    });
-
-    test('procesaDireccionViento logs correct wind direction for SE/S/SO', async () => {
-        mockResponse.current_weather.winddirection = 180;
-        await obtenInformacionMeteo(42.2576, -8.683);
-        console.log = jest.fn();
-        procesaDireccionViento();
-        expect(console.log).toHaveBeenCalledWith('180° SE/S/SO🌬️');
-    });
-
-    test('procesaDireccionViento logs correct wind direction for SO/O/NO', async () => {
-        mockResponse.current_weather.winddirection = 270;
-        await obtenInformacionMeteo(42.2576, -8.683);
-        console.log = jest.fn();
-        procesaDireccionViento();
-        expect(console.log).toHaveBeenCalledWith('270° SO/O/NO🌬️');
-    });
-
-    test('procesaTemperatura logs correct temperature and message', async () => {
-        console.log = jest.fn();
-        await obtenInformacionMeteo(42.2576, -8.683);
         procesaTemperatura();
-        expect(console.log).toHaveBeenCalledWith('15 °C');
-        expect(console.log).toHaveBeenCalledWith('Se está bien👌');
+        expect(console.log).toHaveBeenCalledWith(`${temperature} °C`);
+        expect(console.log).toHaveBeenCalledWith(expected);
     });
 
-    test('procesaVelocidadViento logs correct wind speed and message', async () => {
-        console.log = jest.fn();
+    test.each([
+        { windspeed: 5, expected: '🐢' },
+        { windspeed: 15, expected: '🚀' }
+    ])('procesaVelocidadViento tiene que enseñar el mensaje correcto de $windspeed en Km/h', async ({ windspeed, expected }) => {
+        mockResponse.current_weather.windspeed = windspeed;
         await obtenInformacionMeteo(42.2576, -8.683);
+        console.log = jest.fn();
         procesaVelocidadViento();
-        expect(console.log).toHaveBeenCalledWith('5 Km/h');
-        expect(console.log).toHaveBeenCalledWith('🐢');
+        expect(console.log).toHaveBeenCalledWith(`${windspeed} Km/h`);
+        expect(console.log).toHaveBeenCalledWith(expected);
     });
 });
