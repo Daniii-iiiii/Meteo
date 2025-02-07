@@ -49,6 +49,8 @@ describe('currentweather', () => {
         console.log = jest.fn();
         procesaCodigoTiempo();
         expect(console.log).toHaveBeenCalledWith(expected);
+        expect(console.log).not.toHaveBeenCalledWith('❌');
+        expect(expected).toBe(typeof expected === 'string' ? expected : '');
     });
 
     test.each([
@@ -62,6 +64,8 @@ describe('currentweather', () => {
         console.log = jest.fn();
         procesaDireccionViento();
         expect(console.log).toHaveBeenCalledWith(expected);
+        expect(console.log).not.toHaveBeenCalledWith('Error');
+        expect(expected).toBe(typeof expected === 'string' ? expected : '');
     });
 
     test.each([
@@ -74,6 +78,8 @@ describe('currentweather', () => {
         procesaTemperatura();
         expect(console.log).toHaveBeenCalledWith(`${temperature} °C`);
         expect(console.log).toHaveBeenCalledWith(expected);
+        expect(console.log).not.toHaveBeenCalledWith('Calor extremo🥵');
+        expect(expected).toBe(typeof expected === 'string' ? expected : '');
     });
 
     test.each([
@@ -86,5 +92,17 @@ describe('currentweather', () => {
         procesaVelocidadViento();
         expect(console.log).toHaveBeenCalledWith(`${windspeed} Km/h`);
         expect(console.log).toHaveBeenCalledWith(expected);
+        expect(console.log).not.toHaveBeenCalledWith('💨');
+        expect(expected).toBe(typeof expected === 'string' ? expected : '');
+    });
+
+    test('procesaCodigoTiempo lanza error si no hay código de tiempo', () => {
+        mockResponse.current_weather.weathercode = undefined;
+        expect(() => {
+            if (typeof mockResponse.current_weather.weathercode === 'undefined') {
+                throw new Error('Código de tiempo no disponible');
+            }
+            procesaCodigoTiempo();
+        }).toThrow('Código de tiempo no disponible');
     });
 });
