@@ -102,5 +102,6 @@ module.exports = {
   procesaDireccionViento,
   procesaTemperatura,
   procesaVelocidadViento,
+  main
 };
  
